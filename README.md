@@ -4,15 +4,16 @@
 
 This project was completed as a part of The Information Lab's Data Engineering School. It was incrementally developed on a weekly basis by applying the core skills that correspond to the main stages in the Data Engineering lifecycle: Extract, Transform and Load (ETL). The data for this project comes from [Amplitude's Export API](https://amplitude.com/docs/apis/analytics/export).
 
-Completed ✅
+### Tasks
+✅ Completed
 - [x] Ingestion of data via API Call using python script - `amplitude_api_call.py`
 - [x] Error Handling in the python script using API response status code
 
-To-Do ⌛
+⌛ To-Do
 - [ ] Unpacking ingested ZIP files
 - [ ] Logging
 
-Future Enhancements 🔜
+🔜 Future Enhancements
 - [ ] Error handling of API call using response.exceptions
 - [ ] Modularize steps into functions that can be reused in other scripts
 
@@ -22,8 +23,7 @@ Future Enhancements 🔜
 
 The `amplitude_api_call.py` script automates the process of exporting raw event data from Amplitude's **EU Residency** server. It calculates the date range for "yesterday" (full 24-hour cycle), fetches the data via the Amplitude Export API, and saves the resulting ZIP file locally.
 
-## 🚀 Features
-
+### 🚀 Features
 * **Automated Date Handling:** Automatically calculates start and end times for the previous day.
 * **EU Endpoint:** Configured specifically for `analytics.eu.amplitude.com`.
 * **Retry Logic:** Includes a `while` loop to retry the request up to 3 times in case of server instability.
@@ -31,14 +31,12 @@ The `amplitude_api_call.py` script automates the process of exporting raw event 
 * **Error Handling:** Provides specific feedback for common HTTP status codes (400, 404, 504).
 * **File Management:** Automatically checks for/creates a `data/` directory and saves files with timestamped naming conventions.
 
-## 📋 Prerequisites
-
+### 📋 Prerequisites
 * Python 3.x
 * An Amplitude Project (EU Data Center)
 * API Key and Secret Key
 
-## 🛠️ Installation & Setup
-
+### 🛠️ Setup
 1.  **Clone the repository** (or download the script):
     ```bash
     git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
@@ -59,8 +57,7 @@ The `amplitude_api_call.py` script automates the process of exporting raw event 
     AMP_SECRET_KEY=your_actual_secret_key_here
     ```
 
-## 🏃 Usage
-
+### 🏃 How to run
 Run the script from your terminal:
 
 ```bash

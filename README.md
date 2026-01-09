@@ -8,7 +8,7 @@ This project was completed as a part of The Information Lab's Data Engineering S
 ✅ Completed
 - [x] Ingestion of data via API Call using python script - `amplitude_api_call.py`
 - [x] Error Handling in the python script using API response status code
-- [x] Logging
+- [x] Robust logging in python script
 
 🔜 Future Enhancements
 - [ ] Error handling of API call using response.exceptions

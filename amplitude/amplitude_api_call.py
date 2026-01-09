@@ -6,6 +6,39 @@ import os
 import time
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import logging
+
+#Creating variable for logs folder creation logic 
+logs_dir = 'logs'
+
+#Checking logs folder exists. If it doesn't exist, a folder is created
+if os.path.exists(logs_dir):
+    pass
+else:
+    os.mkdir(logs_dir)
+
+# Get yesterday's date
+yesterday = datetime.now() - timedelta(days=1)
+
+# Format yesterday's start and end time as strings (YYYYMMDDTHH) for API parameters
+start_time = yesterday.strftime('%Y%m%dT00')
+end_time = yesterday.strftime('%Y%m%dT23')
+
+# Create dynamic file name based off of start/end time
+filename = f'amplitude_{start_time}_{end_time}'
+
+#Create log filename variable that will create a new log file for each run
+log_filename = f"logs/logging_example_{filename}.log"
+
+#Logging config
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filename=log_filename
+)
+
+#Create logger config variable
+logger = logging.getLogger()
 
 # Load .amplitude_env file
 load_dotenv()
@@ -14,23 +47,12 @@ load_dotenv()
 api_key = os.getenv('AMP_API_KEY')
 secret_key = os.getenv('AMP_SECRET_KEY')
 
-# Get yesterday's date
-yesterday = datetime.now() - timedelta(days=1)
-
-# Format the start and end time strings (YYYYMMDDTHH)
-start_time = yesterday.strftime('%Y%m%dT00')
-end_time = yesterday.strftime('%Y%m%dT23')
-
-
 # API endpoint is the EU residency server
-url = 'https://analytics.eu.amplitude.com/api/2/export'
+url = 'https://analytics.eu.amplitude.com/api/2/expor'
 params = {
     'start': start_time,
     'end': end_time
 }
-
-# Create dynamic file name based off of start/end time
-filename = f'amplitude_{start_time}_{end_time}'
 
 # Create variables for while loop check status code test
 number_of_tries = 3
@@ -69,27 +91,39 @@ while count < number_of_tries:
                 file.write(data)
             # Print success message
             print(f'Data retrieved and stored at /{filepath} 😊')
+            #Logger will note a message if file write is successful
+            logger.info(f'Data retrieved and stored at /{filepath} 😊') 
         except Exception as e:
             print(e)
+            #Logger will note exception error if file write is unsuccessful
+            logger.error(f"An error occurred; {e}")             
         break
 
     # Print reason status code 400
     elif response_code == 400:
-        print('Status code 400: File size max of 4GB exceeded. Adjust date range and try again')      
+        print('Status code 400: File size max of 4GB exceeded. Adjust date range and try again')
+        #Logger notes response reason when response code is 100s or 500s
+        logger.warning('Status code 400: File size max of 4GB exceeded.')      
         break
 
     # Print reason status code 404
     elif response_code == 404:
-        print('Status code 404: either the API did not run correctly or there is no data available for this time range. Double check the API configuration or adjust date range and try again')    
+        print('Status code 404: either the API did not run correctly or there is no data available for this time range. Double check the API configuration or adjust date range and try again')
+        #Logger notes response reason when response code is 100s or 500s
+        logger.warning('Status code 404: either the API did not run correctly or there is no data available for this time range.')    
         break
 
     # Print reason status code 504
     elif response_code == 504:
-        print('Status code 504: Timeout due to large data size. Adjust date range and try again')     
+        print('Status code 504: Timeout due to large data size. Adjust date range and try again') 
+        #Logger notes response reason when response code is 100s or 500s
+        logger.warning('Status code 504: Timeout due to large data size.')    
         break
 
     # Print response reason and number of attempts and wait 10 seconds before loop runs again
     else:
         count +=1
         print(f'Error: {response.reason}. API will try again shortly. This is attempt {count}/{number_of_tries}')
+        #Logger notes response reason when error occurs when connecting to the API
+        logger.warning(f'Error: {response.reason}. API will try again shortly. This is attempt {count}/{number_of_tries}')
         time.sleep(10)

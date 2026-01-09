@@ -8,27 +8,25 @@ This project was completed as a part of The Information Lab's Data Engineering S
 ✅ Completed
 - [x] Ingestion of data via API Call using python script - `amplitude_api_call.py`
 - [x] Error Handling in the python script using API response status code
-
-⌛ To-Do
-- [ ] Unpacking ingested ZIP files
-- [ ] Logging
+- [x] Logging
 
 🔜 Future Enhancements
 - [ ] Error handling of API call using response.exceptions
-- [ ] Modularize steps into functions that can be reused in other scripts
+- [ ] Extract events data from nested .zip files
 
 ---
 
 ## Extract
 
-The `amplitude_api_call.py` script automates the process of exporting raw event data from Amplitude's **EU Residency** server. It calculates the date range for "yesterday" (full 24-hour cycle), fetches the data via the Amplitude Export API, and saves the resulting ZIP file locally.
+The `amplitude_api_call.py` script automates the process of exporting raw event data from Amplitude's **EU Residency** server. It fetches data for "yesterday" (a full 24-hour cycle), saves the data to a local ZIP file, and maintains a detailed log of the execution process.
 
 ### 🚀 Features
 * **Automated Date Handling:** Automatically calculates start and end times for the previous day.
 * **EU Endpoint:** Configured specifically for `analytics.eu.amplitude.com`.
-* **Retry Logic:** Includes a `while` loop to retry the request up to 3 times in case of server instability.
 * **Secure Configuration:** Uses environment variables to protect API credentials.
+* **Retry Logic:** Includes a `while` loop to retry the request up to 3 times in case of server instability.
 * **Error Handling:** Provides specific feedback for common HTTP status codes (400, 404, 504).
+* **Robust Logging:** Automatically creates a `logs/` directory and saves detailed execution logs for every run.
 * **File Management:** Automatically checks for/creates a `data/` directory and saves files with timestamped naming conventions.
 
 ### 📋 Prerequisites
@@ -62,3 +60,4 @@ Run the script from your terminal:
 
 ```bash
 python your_script_name.py
+```

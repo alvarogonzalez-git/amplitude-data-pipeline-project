@@ -48,7 +48,7 @@ api_key = os.getenv('AMP_API_KEY')
 secret_key = os.getenv('AMP_SECRET_KEY')
 
 # API endpoint is the EU residency server
-url = 'https://analytics.eu.amplitude.com/api/2/expor'
+url = 'https://analytics.eu.amplitude.com/api/2/export'
 params = {
     'start': start_time,
     'end': end_time

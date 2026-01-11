@@ -44,6 +44,7 @@ load_dotenv()
 # Assign keys to variables
 api_key = os.getenv('AMP_API_KEY')
 secret_key = os.getenv('AMP_SECRET_KEY')
+logger.info('API key and secret imported from .env file.')
 
 # API endpoint is the EU residency server
 url = 'https://analytics.eu.amplitude.com/api/2/export'
@@ -55,78 +56,104 @@ params = {
 # Create variables for while loop check status code test
 number_of_tries = 3
 count = 0
+download_success = False
 
 # Logic to ensure API call retries do not exceed defined number limit
 while count < number_of_tries:
 
-    # Make the GET request with basic authentication
-    response = requests.get(url, params=params, auth=(api_key, secret_key), timeout = 10)
+    # Logging that download attempt has begun
+    logger.info(f"Attempting download {count + 1}/{number_of_tries}...")
 
-    # Assign response status code to a variable
-    response_code = response.status_code
+    # Make the GET request with basic authentication. try/except block to log information in the case of any errors and prevent early exit of loop.
+    try:
+        response = requests.get(url, params=params, auth=(api_key, secret_key), timeout = 20)
 
-    # Wrapping folder creation, filepath creation, file write logic into conditional statement that checks response status code and returns a response to use based off of this.
-    if response_code == 200:
-        # Assign data to variable
-        data = response.content
+        # Assign response status code to a variable
+        response_code = response.status_code
 
-        # Create variable for data folder creation logic
-        dir = "data"
-        os.makedirs(dir, exist_ok=True)
+        # Wrapping folder creation, filepath creation, file write logic into conditional statement that checks response status code and returns a response to use based off of this.
+        if response_code == 200:
+            logger.info("Connection established. Downloading stream...")
+            # Assign data to variable
+            data = response.content
 
-        # Created filepath using filename variable and folder variable
-        filepath = f'{dir}/{filename}.zip'
+            # Create variable for data folder creation logic
+            dir = "data"
+            os.makedirs(dir, exist_ok=True)
 
-        # try/except block to provide information if there are any issues writing the file
-        try:
-            # Writing data file
-            with open(filepath, 'wb') as file:
-                file.write(data)
-            # Print success message
-            print(f'Data retrieved and stored at /{filepath} 😊')
-            # Logger will note a message if file write is successful
-            logger.info(f'Data retrieved and stored at /{filepath} 😊') 
-        except Exception as e:
-            print(e)
-            # Logger will note exception error if file write is unsuccessful
-            logger.error(f"An error occurred; {e}")             
-        break
+            # Created filepath using filename variable and folder variable
+            filepath = f'{dir}/{filename}.zip'
 
-    # Print reason status code 400
-    elif response_code == 400:
-        print('Status code 400: File size max of 4GB exceeded. Adjust date range and try again')
-        # Logger notes response reason when response code is 100s or 500s
-        logger.warning('Status code 400: File size max of 4GB exceeded.')      
-        break
+            # try/except block to provide information if there are any issues writing the file
+            try:
+                # Writing data file
+                with open(filepath, 'wb') as file:
+                    file.write(data)
+                # Print success message
+                print(f'Data retrieved and stored at /{filepath} 😊')
+                # Logger will note a message if file write is successful
+                logger.info(f'Data retrieved and stored at /{filepath} 😊') 
+                download_success = True
+            except Exception as e:
+                print(e)
+                # Logger will note exception error if file write is unsuccessful
+                logger.error(f"An error occurred; {e}")             
+            break
 
-    # Print reason status code 404
-    elif response_code == 404:
-        print('Status code 404: either the API did not run correctly or there is no data available for this time range. Double check the API configuration or adjust date range and try again')
-        # Logger notes response reason when response code is 100s or 500s
-        logger.warning('Status code 404: either the API did not run correctly or there is no data available for this time range.')    
-        break
+        # Print reason status code 400
+        elif response_code == 400:
+            print('Status code 400: File size max of 4GB exceeded. Adjust date range and try again')
+            # Logger notes response reason when response code is 100s or 500s
+            logger.warning('Status code 400: File size max of 4GB exceeded.')      
+            break
 
-    # Print reason status code 504
-    elif response_code == 504:
-        print('Status code 504: Timeout due to large data size. Adjust date range and try again') 
-        # Logger notes response reason when response code is 100s or 500s
-        logger.warning('Status code 504: Timeout due to large data size.')    
-        break
+        # Print reason status code 404
+        elif response_code == 404:
+            print('Status code 404: either the API did not run correctly or there is no data available for this time range. Double check the API configuration or adjust date range and try again')
+            # Logger notes response reason when response code is 100s or 500s
+            logger.warning('Status code 404: either the API did not run correctly or there is no data available for this time range.')    
+            break
 
-    # Print response reason and number of attempts and wait 10 seconds before loop runs again
-    else:
-        count +=1
-        print(f'Error: {response.reason}. API will try again shortly. This is attempt {count}/{number_of_tries}')
-        # Logger notes response reason when error occurs when connecting to the API
-        logger.warning(f'Error: {response.reason}. API will try again shortly. This is attempt {count}/{number_of_tries}')
-        time.sleep(10)
-    
-# Create local output directory
-extracted_data = "extracted_data"
-os.makedirs(extracted_data, exist_ok=True)
+        # Print reason status code 504
+        elif response_code == 504:
+            print('Status code 504: Timeout due to large data size. Adjust date range and try again') 
+            # Logger notes response reason when response code is 100s or 500s
+            logger.warning('Status code 504: Timeout due to large data size.')    
+            break
 
-# Call nested zip extract function
-try:
-    nested_zip_file_extract(extracted_data, filepath)
-except Exception as e:
-    print({e})
+        # Print response reason and number of attempts and wait 10 seconds before loop runs again
+        else:
+            count +=1
+            print(f'Error: {response.reason}. API will try again shortly. This is attempt {count}/{number_of_tries}. Retrying...')
+            # Logger notes response reason when error occurs when connecting to the API
+            logger.warning(f'Error: {response.reason}. API will try again shortly. This is attempt {count}/{number_of_tries}. Retrying...')
+            time.sleep(10)
+
+    # Exception errors raised if API connection fails
+    except requests.exceptions.Timeout as e:
+        print(f"Request failed - {e}")
+        logger.error("Request timed out - server may be slow")
+    except requests.exceptions.ConnectionError as e:
+        print(f"Request failed - {e}")
+        logger.error("Connection failed - check network")
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed - {e}")
+        logger.error(f"Other request error: {e}")
+
+# Logic to only run nested zip extract function if files successfully downloaded from Amplitude
+if download_success == True:
+    # Create local output directory
+    extracted_data = "extracted_data"
+    os.makedirs(extracted_data, exist_ok=True)
+
+    # Call nested zip extract function. Prints exception error if function fails.
+    try:
+        logger.info("Starting nested zip file extraction...")
+        nested_zip_file_extract(extracted_data, filepath)
+        logger.info("Extraction complete.") 
+    except Exception as e:
+        print(f"Extraction failed: {e}")
+        logger.error(f"Extraction failed: {e}")
+else:
+    print("Data download was unsuccessful. Review logs and try again.")
+    logger.info(f'Data download was unsuccessful so no data was extracted.') 

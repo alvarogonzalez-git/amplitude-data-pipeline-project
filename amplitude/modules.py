@@ -9,8 +9,42 @@ import gzip         # For working with .gz compressed files
 import shutil       # High-level file operations (copying, deleting trees)
 import tempfile     # For generating temporary files/directories
 
-def zip_gzip_file_extract(data_dir, filename):
-    print(f"--- Starting extraction process for: {filename} ---")
+def nested_zip_file_extract(data_dir, filepath):
+    """Extracts JSON files from a nested Amplitude data export archive.
+
+    This function handles the specific Amplitude export structure: a main .zip archive 
+    containing a numeric directory, which in turn contains multiple .gz compressed 
+    JSON files. It handles the full pipeline of unzipping, locating the data, 
+    decompressing the files, and cleaning up temporary artifacts.
+
+    Args:
+        data_dir (str): The absolute or relative path to the destination directory 
+                        where the final .json files will be saved.
+        filename (str): The absolute or relative path to the source .zip file 
+                        downloaded from the Amplitude API.
+
+    Raises:
+        zipfile.BadZipFile: If the provided source file is not a valid zip archive.
+        StopIteration: If the function cannot find a numeric directory inside the 
+                       unzipped archive (unexpected file structure).
+        OSError: If there are permission issues or errors creating/deleting directories.
+
+    Process:
+        1. Creates a secure temporary directory using `tempfile`.
+        2. Extracts the main .zip archive into the temporary directory.
+        3. Scans the extracted content to find the internal data folder (typically a numeric ID).
+        4. Walks through the internal folder, identifying all .gz files.
+        5. Decompresses each .gz file into a .json file in the `data_dir`.
+        6. Prints real-time progress to the console.
+        7. Recursively deletes the temporary directory to clean up disk space.
+
+    Example:
+        >>> output_folder = "/path/to/project/extracted_data"
+        >>> source_file = "/path/to/project/data/amplitude_export.zip"
+        >>> zip_gzip_file_extract(output_folder, source_file)
+    """
+    
+    print(f"--- Starting extraction process for: {filepath} ---")
     
     # Creates a unique temporary directory
     temp_dir = tempfile.mkdtemp()
@@ -18,7 +52,7 @@ def zip_gzip_file_extract(data_dir, filename):
 
     try:
         # Opens the main zip file
-        with zipfile.ZipFile(filename, "r") as zip_ref:
+        with zipfile.ZipFile(filepath, "r") as zip_ref:
             print("Unzipping main archive...")
             zip_ref.extractall(temp_dir)
             print("Main archive unzipped successfully.")

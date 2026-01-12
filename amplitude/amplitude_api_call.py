@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import logging
 
 # Import libraries for nested .zip file extract function
-from modules import nested_zip_file_extract
+from modules.functions import nested_zip_file_extract
 
  # Create variable for data folder creation logic
 logs_dir = "logs"

@@ -78,11 +78,11 @@ while count < number_of_tries:
             data = response.content
 
             # Create variable for data folder creation logic
-            dir = "data"
-            os.makedirs(dir, exist_ok=True)
+            data_dir = "data"
+            os.makedirs(data_dir, exist_ok=True)
 
             # Created filepath using filename variable and folder variable
-            filepath = f'{dir}/{filename}.zip'
+            filepath = f'{data_dir}/{filename}.zip'
 
             # try/except block to provide information if there are any issues writing the file
             try:

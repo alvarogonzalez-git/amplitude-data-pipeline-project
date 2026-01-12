@@ -78,11 +78,11 @@ while count < number_of_tries:
             data = response.content
 
             # Create variable for data folder creation logic
-            dir = "data"
-            os.makedirs(dir, exist_ok=True)
+            data_dir = "downloaded_data"
+            os.makedirs(data_dir, exist_ok=True)
 
             # Created filepath using filename variable and folder variable
-            filepath = f'{dir}/{filename}.zip'
+            filepath = f'{data_dir}/{filename}.zip'
 
             # try/except block to provide information if there are any issues writing the file
             try:
@@ -150,10 +150,20 @@ if download_success == True:
     try:
         logger.info("Starting nested zip file extraction...")
         nested_zip_file_extract(extracted_data, filepath)
-        logger.info("Extraction complete.") 
+        logger.info("Extraction complete.")
+
+        # .ZIP file is deleted once all files have been extracted without error
+        if os.path.exists(filepath):
+            os.remove(filepath)
+            print(f"Cleanup: Deleted {filepath}")
+            logger.info(f"Cleanup: Deleted {filepath}")
+
+    # Raise and log appropriate error code if nested zip extraction fails
     except Exception as e:
         print(f"Extraction failed: {e}")
         logger.error(f"Extraction failed: {e}")
+
+# Raise and log appropriate error code if API download fails
 else:
     print("Data download was unsuccessful. Review logs and try again.")
     logger.info(f'Data download was unsuccessful so no data was extracted.') 

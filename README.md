@@ -4,7 +4,7 @@
   <h1>Amplitude Data Pipeline</h1>
 
   <p>
-    <strong>A production-ready ELT pipeline extracting behavioral data from Amplitude and loading it to AWS S3.</strong>
+    <strong>A production-ready ELT pipeline extracting data from Amplitude and loading it to AWS S3.</strong>
   </p>
 </div>
 

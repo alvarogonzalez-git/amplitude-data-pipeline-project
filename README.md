@@ -79,14 +79,14 @@ cd amplitude-data-pipeline-project</code></pre>
 <pre><code># Amplitude Credentials
 AMP_API_KEY=your_amplitude_api_key
 AMP_SECRET_KEY=your_amplitude_secret_key
-<code>
-# AWS Credentials
+</code></pre>
+
+<pre><code># AWS Credentials
 AWS_ACCESS_KEY=your_aws_access_key
 AWS_SECRET_KEY=your_aws_secret_key
-AWS_BUCKET_NAME=your_s3_bucket_name</code></pre>
-
-<hr />
-
+AWS_BUCKET_NAME=your_s3_bucket_name
+</code></pre>
+  
 <h2>🏃 Usage</h2>
 
 <h3>Phase 1: Extraction</h3>

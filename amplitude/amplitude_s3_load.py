@@ -46,7 +46,7 @@ os.makedirs(data_dir, exist_ok=True)
 
 # Checks if folder is empty
 if len(os.listdir(data_dir)) == 0:
-    print(f"The '{data_dir}' folder is empty.")
+    print(f"The '{data_dir}' folder is empty. No files will be loaded to s3.")
     logger.info(f"The '{data_dir}' folder is empty. No files will be loaded to s3.")
 
 else:

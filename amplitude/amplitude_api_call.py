@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import logging
 
 # Import libraries for nested .zip file extract function
-from modules.functions import nested_zip_file_extract
+from modules.nested_zip_file_extract import nested_zip_file_extract
 
  # Create variable for data folder creation logic
 logs_dir = "logs"
@@ -66,7 +66,7 @@ while count < number_of_tries:
 
     # Make the GET request with basic authentication. try/except block to log information in the case of any errors and prevent early exit of loop.
     try:
-        response = requests.get(url, params=params, auth=(api_key, secret_key), timeout = 20)
+        response = requests.get(url, params=params, auth=(api_key, secret_key), timeout = 45)
 
         # Assign response status code to a variable
         response_code = response.status_code

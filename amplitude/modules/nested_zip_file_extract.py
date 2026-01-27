@@ -20,7 +20,7 @@ def nested_zip_file_extract(data_dir, filepath):
     Args:
         data_dir (str): The absolute or relative path to the destination directory 
                         where the final .json files will be saved.
-        filename (str): The absolute or relative path to the source .zip file 
+        filepath (str): The absolute or relative path to the source .zip file 
                         downloaded from the Amplitude API.
 
     Raises:
@@ -116,3 +116,12 @@ def nested_zip_file_extract(data_dir, filepath):
         raise
 
     print(f"\nSUCCESS! {file_count} files extracted to '{data_dir}' directory! 😊")
+    
+    # Logic to pass true for extract_success if more than one file extracted
+    if file_count == 0:
+        extract_success = False
+    else:
+        extract_success = True
+
+    # Pass True status when function is run
+    return(extract_success)

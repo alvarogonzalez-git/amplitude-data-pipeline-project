@@ -42,8 +42,8 @@ logger = logging.getLogger()
 load_dotenv()
 
 # Assign keys to variables
-api_key = os.getenv('AMP_API_KEY')
-secret_key = os.getenv('AMP_SECRET_KEY')
+AMP_API_KEY = os.getenv('AMP_API_KEY')
+AMP_SECRET_KEY = os.getenv('AMP_SECRET_KEY')
 logger.info('API key and secret imported from .env file.')
 
 # API endpoint is the EU residency server
@@ -66,7 +66,7 @@ while count < number_of_tries:
 
     # Make the GET request with basic authentication. try/except block to log information in the case of any errors and prevent early exit of loop.
     try:
-        response = requests.get(url, params=params, auth=(api_key, secret_key), timeout = 45)
+        response = requests.get(url, params=params, auth=(AMP_API_KEY, AMP_SECRET_KEY), timeout = 45)
 
         # Assign response status code to a variable
         response_code = response.status_code

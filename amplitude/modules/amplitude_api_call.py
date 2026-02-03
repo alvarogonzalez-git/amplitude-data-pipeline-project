@@ -1,11 +1,11 @@
 import requests
 import time
+import os
 
-def amplitude_api_call(filepath: str, url: str, start_time: str, end_time: str, AMP_API_KEY: str, AMP_SECRET_KEY: str, max_attempts:int):
+def amplitude_api_call(url: str, start_time: str, end_time: str, AMP_API_KEY: str, AMP_SECRET_KEY: str, max_attempts:int):
     '''
     This function calls the Amplitude API and downloads data between start_time and end_time and saves it to the defined filepath.
     
-    :param filepath: filepath you wish to save your downloaded data to.
     :param url: Amplitude API URL.
     :param start_time: earliest date in the download date range.
     :param end_time: latest date in the download date range.
@@ -36,6 +36,16 @@ def amplitude_api_call(filepath: str, url: str, start_time: str, end_time: str, 
 
             # Assign response status code to a variable
             response_code = response.status_code
+
+            # Create variable for data folder creation logic
+            download_dir = "downloaded_data"
+            os.makedirs(download_dir, exist_ok=True)
+
+            # Create dynamic file name based off of start/end time
+            filename = f'amplitude_{start_time}_{end_time}'
+
+            # Created filepath using filename variable and folder variable
+            filepath = f'{download_dir}/{filename}.zip'
 
             # Wrapping folder creation, filepath creation, file write logic into conditional statement that checks response status code and returns a response to use based off of this.
             if response_code == 200:

@@ -9,7 +9,7 @@ import gzip         # For working with .gz compressed files
 import shutil       # High-level file operations (copying, deleting trees)
 import tempfile     # For generating temporary files/directories
 
-def nested_zip_file_extract(data_dir, filepath):
+def nested_zip_file_extract(extract_dir, filepath):
     """Extracts JSON files from a nested Amplitude data export archive.
 
     This function handles the specific Amplitude export structure: a main .zip archive 
@@ -18,7 +18,7 @@ def nested_zip_file_extract(data_dir, filepath):
     decompressing the files, and cleaning up temporary artifacts.
 
     Args:
-        data_dir (str): The absolute or relative path to the destination directory 
+        extract_dir (str): The absolute or relative path to the destination directory 
                         where the final .json files will be saved.
         filepath (str): The absolute or relative path to the source .zip file 
                         downloaded from the Amplitude API.
@@ -44,6 +44,17 @@ def nested_zip_file_extract(data_dir, filepath):
         >>> zip_gzip_file_extract(output_folder, source_file)
     """
     
+    # Create variable for data folder creation logic
+    download_dir = "downloaded_data"
+    os.makedirs(download_dir, exist_ok=True)
+
+    # Create dynamic file name based off of start/end time
+    filename = f'amplitude_{start_time}_{end_time}'
+
+    # Created filepath using filename variable and folder variable
+    filepath = f'{download_dir}/{filename}.zip'
+
+
     print(f"--- Starting extraction process for: {filepath} ---")
     
     # Creates a unique temporary directory
@@ -57,7 +68,7 @@ def nested_zip_file_extract(data_dir, filepath):
             zip_ref.extractall(temp_dir)
             print("Main archive unzipped successfully.")
     except Exception as e:
-        print(f"CRITICAL ERROR: Failed to unzip main file. {e}")
+        print(f"ERROR: Failed to unzip main file. {e}")
         shutil.rmtree(temp_dir) # Clean up if it fails immediately
         raise 
 
@@ -76,6 +87,7 @@ def nested_zip_file_extract(data_dir, filepath):
 
     # Initialize a counter for feedback
     file_count = 0
+    extract_success = False
 
     # Walk through the directory tree
     for root, _, files in os.walk(day_path):
@@ -93,7 +105,7 @@ def nested_zip_file_extract(data_dir, filepath):
                 
                 # Determine output filename (removes the last 3 chars '.gz')
                 json_filename = file[:-3]  
-                output_path = os.path.join(data_dir, json_filename)
+                output_path = os.path.join(extract_dir, json_filename)
 
                 # PRINT STATUS: This prevents the "frozen" look
                 print(f"[{file_count}] Decompressing: {file} -> {json_filename}")
@@ -115,7 +127,7 @@ def nested_zip_file_extract(data_dir, filepath):
         print(f"Warning: Could not delete temp directory {temp_dir}. {e}")
         raise
 
-    print(f"\nSUCCESS! {file_count} files extracted to '{data_dir}' directory! 😊")
+    print(f"\nSUCCESS! {file_count} files extracted to '{extract_dir}' directory! 😊")
     
     # Logic to pass true for extract_success if more than one file extracted
     if file_count == 0:

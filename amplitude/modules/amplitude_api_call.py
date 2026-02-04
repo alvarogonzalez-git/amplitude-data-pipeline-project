@@ -2,6 +2,10 @@
 import requests
 import time
 import os
+import logging
+
+# Define the logger
+logger = logging.getLogger(__name__)
 
 def amplitude_api_call(url: str, start_time: str, end_time: str, AMP_API_KEY: str, AMP_SECRET_KEY: str, max_attempts:int):
     '''
@@ -30,11 +34,15 @@ def amplitude_api_call(url: str, start_time: str, end_time: str, AMP_API_KEY: st
     loop_count = 0
     download_success = False
 
+    # Log beginning of API connection and file download process
+    print('Initiating API connection and file download')
+    logger.info('Initiating API connection and file download')
+
     # Logic to ensure API call retries do not exceed defined number of attempts
     while loop_count < max_attempts:
 
         # Logging that download attempt has begun
-        # logger.info(f"Attempting download {loop_count + 1}/{max_attempts}...")
+        logger.info(f"Download attempt {loop_count + 1}/{max_attempts}...")
 
         # Make the GET request with basic authentication. try/except block to log information in the case of any errors and prevent early exit of loop.
         try:
@@ -55,7 +63,8 @@ def amplitude_api_call(url: str, start_time: str, end_time: str, AMP_API_KEY: st
 
             # Wrapping folder creation, filepath creation, file write logic into conditional statement that checks response status code and returns a response to use based off of this.
             if response_code == 200:
-                # logger.info("Connection established. Downloading stream...")
+                logger.info("Connection established. Downloading stream...")
+
                 # Assign data to variable
                 data = response.content
 
@@ -67,33 +76,33 @@ def amplitude_api_call(url: str, start_time: str, end_time: str, AMP_API_KEY: st
                     # Print success message
                     print(f'Data retrieved and stored at /{filepath} 😊')
                     # Logger will note a message if file write is successful
-                    # logger.info(f'Data retrieved and stored at /{filepath} 😊') 
+                    logger.info(f'Data retrieved and stored at /{filepath} 😊') 
                     download_success = True
                 except Exception as e:
                     print(e)
                     # Logger will note exception error if file write is unsuccessful
-                    # logger.error(f"An error occurred; {e}")             
+                    logger.error(f"An error occurred; {e}")             
                 break
 
             # Print reason status code 400
             elif response_code == 400:
                 print('Status code 400: File size max of 4GB exceeded. Adjust date range and try again')
                 # Logger notes response reason when response code is 100s or 500s
-                # logger.warning('Status code 400: File size max of 4GB exceeded.')      
+                logger.warning('Status code 400: File size max of 4GB exceeded.')      
                 break
 
             # Print reason status code 404
             elif response_code == 404:
                 print('Status code 404: either the API did not run correctly or there is no data available for this time range. Double check the API configuration or adjust date range and try again')
                 # Logger notes response reason when response code is 100s or 500s
-                # logger.warning('Status code 404: either the API did not run correctly or there is no data available for this time range.')    
+                logger.warning('Status code 404: either the API did not run correctly or there is no data available for this time range.')    
                 break
 
             # Print reason status code 504
             elif response_code == 504:
                 print('Status code 504: Timeout due to large data size. Adjust date range and try again') 
                 # Logger notes response reason when response code is 100s or 500s
-                # logger.warning('Status code 504: Timeout due to large data size.')    
+                logger.warning('Status code 504: Timeout due to large data size.')    
                 break
 
             # Print response reason and number of attempts and wait 10 seconds before loop runs again
@@ -101,18 +110,18 @@ def amplitude_api_call(url: str, start_time: str, end_time: str, AMP_API_KEY: st
                 loop_count +=1
                 print(f'Error: {response.reason}. Status code: {response_code}. API will try again shortly. This is attempt {loop_count}/{max_attempts}. Retrying...')
                 # Logger notes response reason when error occurs when connecting to the API
-                # logger.warning(f'Error: {response.reason}. API will try again shortly. This is attempt {loop_count}/{max_attempts}. Retrying...')
+                logger.warning(f'Error: {response.reason}. API will try again shortly. This is attempt {loop_count}/{max_attempts}. Retrying...')
                 time.sleep(10)
 
         # Exception errors raised if API connection fails
         except requests.exceptions.Timeout as e:
             print(f"Request Timeout - {e}")
-            # logger.error("Request timed out - server may be slow")
+            logger.error("Request timed out - server may be slow")
         except requests.exceptions.ConnectionError as e:
             print(f"Connection Error - {e}")
-            # logger.error("Connection failed - check network")
+            logger.error("Connection failed - check network")
         except requests.exceptions.RequestException as e:
             print(f"Request Exception- {e}")
-            # logger.error(f"Other request error: {e}")
+            logger.error(f"Other request error: {e}")
 
     return(download_success)

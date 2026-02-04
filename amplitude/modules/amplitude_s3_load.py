@@ -1,25 +1,10 @@
 # Import libraries
 import boto3
 import os
-# import logging
+import logging
 
-# Create variable for data folder creation logic
-# logs_dir = "logs"
-# os.makedirs(logs_dir, exist_ok=True)
-
-# Create log filename variable that will create a new log file for each run
-# timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-# log_filename = f"logs/log_s3_load_{timestamp}.log"
-
-# # Logging config
-# logging.basicConfig(
-#     level=logging.INFO, 
-#     format='%(asctime)s - %(levelname)s - %(message)s',
-#     filename=log_filename
-# )
-
-# # Create logger config variable
-# logger = logging.getLogger()
+# Define the logger
+logger = logging.getLogger(__name__)
 
 def amplitude_s3_load(extract_folder, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET_NAME):
     """
@@ -42,14 +27,14 @@ def amplitude_s3_load(extract_folder, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET
     # Check if folder with extracted data exists. If it doesn't, folder is created.
     os.makedirs(extract_folder, exist_ok=True)
 
-    # Checks if folder is empty. Function stops if folder is empty
+    # Checks if folder is empty. Function stops if folder is empty.
     if len(os.listdir(extract_folder)) == 0:
         print(f"The '{extract_folder}' folder is empty. No files will be loaded to s3.")
-        # logger.info(f"The '{data_dir}' folder is empty. No files will be loaded to s3.")
+        logger.info(f"The '{extract_folder}' folder is empty. No files will be loaded to s3.")
 
     else:
         print(f"The '{extract_folder}' folder contains files.")
-        # logger.info(f"The '{data_dir}' folder contains files. Files will begin uploading to s3 shortly...")
+        logger.info(f"The '{extract_folder}' folder contains files. Files will begin uploading to s3 shortly...")
 
         # os.listdir returns everything in the folder (files and folders)
         all_items = os.listdir(extract_folder)
@@ -72,7 +57,7 @@ def amplitude_s3_load(extract_folder, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET
 
         # Log number of files added to file_list
         print(f"{file_count} files added to upload list.")
-        # logger.info(f"{file_count} files appended to upload list.")
+        logger.info(f"{file_count} files appended to upload list.")
 
         # Initialize count for number of files
         file_count = 0
@@ -89,7 +74,7 @@ def amplitude_s3_load(extract_folder, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET
                 # Delete the local file ONLY if the line above succeeds
                 os.remove(full_path)
                 print(f"Uploaded and deleted local copy: {filename}")
-                # logger.info(f"Uploaded and deleted local copy: {filename}")
+                logger.info(f"Uploaded and deleted local copy: {filename}")
 
                 # Increase file_count by 1
                 file_count += 1
@@ -97,8 +82,8 @@ def amplitude_s3_load(extract_folder, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET
             except Exception as e:
                 # If upload fails, the code jumps here, and the file is NOT deleted
                 print(f"Failed to upload {filename}: {e}")
-                # logger.error(f"Failed to upload {filename}: {e}")
+                logger.error(f"Failed to upload {filename}: {e}")
         
         # Print and log number of files uploaded to S3 and cleaned up
         print(f"{file_count} files uploaded to bucket:{AWS_BUCKET_NAME} and deleted locally.")
-        # logger.info(f"{file_count} files uploaded to s3 bucket and delete locally. Process Complete.")
+        logger.info(f"{file_count} files uploaded to s3 bucket and delete locally. Process Complete.")

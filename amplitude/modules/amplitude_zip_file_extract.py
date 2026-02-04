@@ -4,6 +4,10 @@ import zipfile
 import gzip
 import shutil
 import tempfile
+import logging
+
+# Define the logger
+logger = logging.getLogger(__name__)
 
 def amplitude_zip_file_extract(zip_folder:str):
     """
@@ -21,6 +25,7 @@ def amplitude_zip_file_extract(zip_folder:str):
     # Check that the zip_folder exists, errors and returns False if it doesn't
     if not os.path.exists(zip_folder):
         print(f"Error: Source folder '{zip_folder}' not found.")
+        logger.error(f"Error: Source folder '{zip_folder}' not found.")
         return False
 
     # Create extracted_data folder if it doesn't already exist
@@ -33,9 +38,12 @@ def amplitude_zip_file_extract(zip_folder:str):
     # Check if .zip files exist in zip_folder. Returns false if no files
     if not zip_files:
         print(f"No .zip files found in '{zip_folder}'.")
+        logger.error(f"No .zip files found in '{zip_folder}'.")
         return False 
 
+    # Message and log start of extraction process
     print(f"Starting extraction for {len(zip_files)} file(s)...")
+    logger.info(f"Starting extraction for {len(zip_files)} file(s)...")
 
     # Set extract success flag - defaults to False, becomes True if we successfully write even a single file to destination.
     extract_success = False
@@ -43,7 +51,11 @@ def amplitude_zip_file_extract(zip_folder:str):
     # Loop that extracts json files from nested .zip files. If successful, cleans the .zip file by deletion.
     for zip_filename in zip_files:
         full_zip_path = os.path.join(zip_folder, zip_filename)
+
+        # Create temporary directory
         temp_dir = tempfile.mkdtemp()
+        print("Created temporary directory to extract .zip files to")
+        logger.info("Created temporary directory to extract .zip files to")
         
         # Local flag: only used to determine if we should cleanup the file currently in the loop
         current_zip_clean = False 
@@ -52,6 +64,8 @@ def amplitude_zip_file_extract(zip_folder:str):
             # Unzip main .zip into temporary directory
             with zipfile.ZipFile(full_zip_path, "r") as zip_ref:
                 zip_ref.extractall(temp_dir)
+                print("Unzipped main .zip file and extracted to temporary directory")
+                logger.info("Unzipped main .zip file and extracted to temporary directory")
             
             # Identify folders inside the extracted files from the main .zip
             items = os.listdir(temp_dir)
@@ -59,7 +73,8 @@ def amplitude_zip_file_extract(zip_folder:str):
             
             # Error if there were no folders inside main .zip
             if not internal_folders:
-                print(f"Skipping {zip_filename}: No internal folder found.")
+                print(f"Skipping {zip_filename} extract process: No internal folder found.")
+                logger.warning(f"Skipping {zip_filename} extract process: No internal folder found.")
                 continue
 
             # Select numeric folder first or first folder if no numeric
@@ -82,12 +97,15 @@ def amplitude_zip_file_extract(zip_folder:str):
                             # Extract the gzip files by reading/writing binary to extract in chunks
                             with gzip.open(gz_path, 'rb') as f_in, open(out_path, 'wb') as f_out:
                                 shutil.copyfileobj(f_in, f_out)
+                                print(f"Extracted {json_name} to {extract_folder}.")
+                                logger.info(f"Extracted {json_name} to {extract_folder}.")
                             
                             # Increment only on file extract success
                             file_count += 1
                             
                         except Exception as e:
                             print(f"Error extracting {file}: {e}")
+                            logger.error(f"Error extracting {file}: {e}")
                             # Clean up partial file if it failed mid-stream
                             if os.path.exists(out_path):
                                 os.remove(out_path)
@@ -95,20 +113,24 @@ def amplitude_zip_file_extract(zip_folder:str):
             # Update flags on success
             if file_count > 0:
                 print(f"Extracted {file_count} files from {zip_filename}")
+                logger.info(f"Extracted {file_count} files from {zip_filename}")
                 extract_success = True  # Extract SUCCESS flag set to True
                 current_zip_clean = True # Flags that the specific zip is good to delete
             else:
                 print(f"Warning: {zip_filename} contained no .gz files.")
+                logger.warning(f"Warning: {zip_filename} contained no .gz files.")
 
             # Cleanup .zip file if the json was extracted successfully
             if current_zip_clean:
                 if os.path.exists(full_zip_path):
                     os.remove(full_zip_path)
-                    print(f"Cleanup: Deleted file {zip_filename}")
+                    print(f"Cleanup: deleted files {zip_filename}")
+                    logger.info(f"Cleanup: deleted files {zip_filename}")
 
         except Exception as e:
             # Error message if a file extraction fails
             print(f"Error processing {zip_filename}: {e}")
+            logger.error(f"Error processing {zip_filename}: {e}")
             
         finally:
             # Delete temporary directory

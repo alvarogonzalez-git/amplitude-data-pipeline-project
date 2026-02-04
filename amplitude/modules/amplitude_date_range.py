@@ -1,7 +1,7 @@
 # Import libraries
 from datetime import datetime, timedelta
 
-def amplitude_data_range(time_unit: str, amount: int):
+def amplitude_date_range(time_unit: str, amount: int):
     '''
     Returns start_time, end_time in '%Y%m%dT00' format. start_time is determined from input parameters. The parameters determine how far back you wish to ingest from. end_time will return yesterday's end of day.
     

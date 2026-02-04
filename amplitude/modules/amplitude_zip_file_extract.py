@@ -40,12 +40,12 @@ def amplitude_zip_file_extract(zip_folder:str):
     # Set extract success flag - defaults to False, becomes True if we successfully write even a single file to destination.
     extract_success = False
 
-    # Loop that extract json files from nested .zip files. If successful, cleans the .zip file.
+    # Loop that extracts json files from nested .zip files. If successful, cleans the .zip file by deletion.
     for zip_filename in zip_files:
         full_zip_path = os.path.join(zip_folder, zip_filename)
         temp_dir = tempfile.mkdtemp()
         
-        # Local flag: only used to determine if we should delete THIS zip file
+        # Local flag: only used to determine if we should cleanup the file currently in the loop
         current_zip_clean = False 
 
         try:
@@ -114,4 +114,5 @@ def amplitude_zip_file_extract(zip_folder:str):
             # Delete temporary directory
             shutil.rmtree(temp_dir)
 
+    # Return extract_success status - this will inform logic in main.py
     return extract_success

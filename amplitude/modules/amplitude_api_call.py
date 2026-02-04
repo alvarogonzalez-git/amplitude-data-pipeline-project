@@ -1,3 +1,4 @@
+# Import libraries
 import requests
 import time
 import os
@@ -19,17 +20,17 @@ def amplitude_api_call(url: str, start_time: str, end_time: str, AMP_API_KEY: st
               False if API call fails.
     '''
 
-    # API data parameters
+    # API date parameters
     params = {
         'start': start_time,
         'end': end_time
     }
 
-    # Create variables for while loop check status code test and confirmation download_complete
+    # Create variables for while loop check status code test and set False download_success as default
     loop_count = 0
     download_success = False
 
-    # Logic to ensure API call retries do not exceed defined number limit
+    # Logic to ensure API call retries do not exceed defined number of attempts
     while loop_count < max_attempts:
 
         # Logging that download attempt has begun
@@ -42,7 +43,7 @@ def amplitude_api_call(url: str, start_time: str, end_time: str, AMP_API_KEY: st
             # Assign response status code to a variable
             response_code = response.status_code
 
-            # Create variable for data folder creation logic
+            # Create variable for downloaded data folder creation logic
             download_dir = "downloaded_data"
             os.makedirs(download_dir, exist_ok=True)
 
@@ -105,13 +106,13 @@ def amplitude_api_call(url: str, start_time: str, end_time: str, AMP_API_KEY: st
 
         # Exception errors raised if API connection fails
         except requests.exceptions.Timeout as e:
-            print(f"Request failed - {e}")
+            print(f"Request Timeout - {e}")
             # logger.error("Request timed out - server may be slow")
         except requests.exceptions.ConnectionError as e:
-            print(f"Request failed - {e}")
+            print(f"Connection Error - {e}")
             # logger.error("Connection failed - check network")
         except requests.exceptions.RequestException as e:
-            print(f"Request failed - {e}")
+            print(f"Request Exception- {e}")
             # logger.error(f"Other request error: {e}")
 
     return(download_success)

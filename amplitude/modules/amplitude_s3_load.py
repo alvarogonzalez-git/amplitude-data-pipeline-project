@@ -1,4 +1,4 @@
-# Import libraries - s3, .env, os
+# Import libraries
 import boto3
 import os
 # import logging
@@ -32,17 +32,17 @@ def amplitude_s3_load(extract_folder, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET
         AWS_BUCKET_NAME (str): AWS access key from .env file
     """
 
-    # Setting s3 client with authentication keys
+    # S3 client set-up with authentication keys
     s3_client = boto3.client(
         's3'
         , aws_access_key_id = AWS_ACCESS_KEY
         , aws_secret_access_key = AWS_SECRET_KEY
     )
 
-    # Assign data filepath to a variable
+    # Check if folder with extracted data exists. If it doesn't, folder is created.
     os.makedirs(extract_folder, exist_ok=True)
 
-    # Checks if folder is empty
+    # Checks if folder is empty. Function stops if folder is empty
     if len(os.listdir(extract_folder)) == 0:
         print(f"The '{extract_folder}' folder is empty. No files will be loaded to s3.")
         # logger.info(f"The '{data_dir}' folder is empty. No files will be loaded to s3.")
@@ -54,15 +54,15 @@ def amplitude_s3_load(extract_folder, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET
         # os.listdir returns everything in the folder (files and folders)
         all_items = os.listdir(extract_folder)
 
-        # Filter for files only
+        # Create empty list to input files in extract_folder
         file_list = []
 
-        # Initialize count for number of files
+        # Initialize count for number of files added to the list
         file_count = 0
 
-        # Loops through all items in the data folder and adds them to a list
+        # Loops through all items in the extract_folder and adds them to the file_list
         for item in all_items:
-            # Creates filepath for each file
+            # Creates filepath for file in the loop
             full_path = os.path.join(extract_folder, item)
             # If file exists, append to the empty list
             if os.path.isfile(full_path):
@@ -71,20 +71,19 @@ def amplitude_s3_load(extract_folder, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET
                 file_count += 1
 
         # Log number of files added to file_list
+        print(f"{file_count} files added to upload list.")
         # logger.info(f"{file_count} files appended to upload list.")
 
         # Initialize count for number of files
         file_count = 0
 
+        # Loops through all files in the file_list, creates relative path and enters try/except block that will upload to S3 bucket and clean up folder
         for filename in file_list:
             # Recreate the full path relative to the script for upload loop
             full_path = os.path.join(extract_folder, filename)
 
             try:
-                # Upload the file
-                    # 1. Path of data folder
-                    # 2. s3 bucket name
-                    # 3. Name of the file you want to upload
+                # Uploads the file to S3 bucket. Args - path of data folder, s3 bucket name, name of the file you want to upload
                 s3_client.upload_file(full_path, AWS_BUCKET_NAME, filename)
 
                 # Delete the local file ONLY if the line above succeeds
@@ -100,6 +99,6 @@ def amplitude_s3_load(extract_folder, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET
                 print(f"Failed to upload {filename}: {e}")
                 # logger.error(f"Failed to upload {filename}: {e}")
         
-        # Print and log number of files added to file_list
+        # Print and log number of files uploaded to S3 and cleaned up
         print(f"{file_count} files uploaded to bucket:{AWS_BUCKET_NAME} and deleted locally.")
         # logger.info(f"{file_count} files uploaded to s3 bucket and delete locally. Process Complete.")

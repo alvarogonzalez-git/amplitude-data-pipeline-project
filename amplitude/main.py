@@ -11,7 +11,7 @@ from modules.amplitude_s3_load import amplitude_s3_load
 # Generate start_time, end_time with custom function
 start_time, end_time = amplitude_date_range('days', 1)
 
-# Load .amplitude_env file
+# Load .env file
 load_dotenv()
 
 # Assign AMP keys to variables
@@ -19,7 +19,7 @@ AMP_API_KEY = os.getenv('AMP_API_KEY')
 AMP_SECRET_KEY = os.getenv('AMP_SECRET_KEY')
 # logger.info('API key and secret imported from .env file.')
 
-# Assign keys to variables
+# Assign AWS keys to variables
 AWS_ACCESS_KEY = os.getenv('AWS_ACCESS_KEY')
 AWS_SECRET_KEY = os.getenv('AWS_SECRET_KEY')
 AWS_BUCKET_NAME = os.getenv('AWS_BUCKET_NAME')
@@ -28,7 +28,7 @@ AWS_BUCKET_NAME = os.getenv('AWS_BUCKET_NAME')
 # Declare url for API call function
 url = 'https://analytics.eu.amplitude.com/api/2/export'
 
-# Amplitude API Call in try/except block if there are any issues. Prints exception error if function fails.
+# Amplitude API call in try/except block using custom function. Prints exception error if function fails.
 try:
     download_success = amplitude_api_call(
         url = url
@@ -47,7 +47,7 @@ except Exception as e:
 # Logic to only run zip extract function if files successfully downloaded from Amplitude
 if download_success == True:
 
-    # Call nested zip extract function. Prints exception error if function fails.
+    # Call custom zip extract function. Prints exception error if function fails.
     try:
         # logger.info("Starting nested zip file extraction...")
         extract_success = amplitude_zip_file_extract('downloaded_data')

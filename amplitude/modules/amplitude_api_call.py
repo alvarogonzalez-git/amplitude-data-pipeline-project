@@ -6,12 +6,17 @@ def amplitude_api_call(url: str, start_time: str, end_time: str, AMP_API_KEY: st
     '''
     This function calls the Amplitude API and downloads data between start_time and end_time and saves it to the defined filepath.
     
-    :param url: Amplitude API URL.
-    :param start_time: earliest date in the download date range.
-    :param end_time: latest date in the download date range.
-    :param AMP_API_KEY: Amplitude API key.
-    :param AMP_SECRET_KEY: Amplitude secret key.
-    :param max_attempts: Maximum number of times the API call will retry in case of timeout.
+    Args:
+        url (str): Amplitude API URL.
+        start_time (str): earliest date in the download date range.
+        end_time (str): latest date in the download date range.
+        AMP_API_KEY (str): Amplitude API key from .env file.
+        AMP_SECRET_KEY (str): Amplitude secret key from .env file.
+        max_attempts (int): Maximum number of times the API call will retry in case of timeout.
+
+    Returns:
+        bool: True if API call and download completed successfully.
+              False if API call fails.
     '''
 
     # API data parameters

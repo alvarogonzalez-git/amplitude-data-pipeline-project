@@ -22,6 +22,15 @@ import os
 # logger = logging.getLogger()
 
 def amplitude_s3_load(extract_folder, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET_NAME):
+    """
+    This function uploads each extracted JSON file to an S3 bucket. Once files are uploaded successfully, the folder is cleaned up.
+
+    Args:
+        extract_folder (str): Name of the folder containing extracted JSON files.
+        AWS_ACCESS_KEY (str): AWS access key from .env file
+        AWS_SECRET_KEY (str): AWS access key from .env file
+        AWS_BUCKET_NAME (str): AWS access key from .env file
+    """
 
     # Setting s3 client with authentication keys
     s3_client = boto3.client(

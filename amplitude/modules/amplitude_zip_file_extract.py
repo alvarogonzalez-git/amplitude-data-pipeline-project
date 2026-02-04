@@ -10,6 +10,9 @@ def amplitude_zip_file_extract(zip_folder:str):
     Scans 'downloaded_data' for zips, extracts JSONs to 'extracted_data',
     and deletes source zips upon success.
     
+    Args:
+        zip_folder (str): Name of the folder containing downloaded .zip files.
+
     Returns:
         bool: True if ALL found files were processed and cleaned up successfully.
               False if ANY file failed or if no files were found.

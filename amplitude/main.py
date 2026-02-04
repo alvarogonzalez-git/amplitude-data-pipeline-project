@@ -38,6 +38,7 @@ try:
         , AMP_SECRET_KEY = AMP_SECRET_KEY
         , max_attempts=3
         )
+    print(f'Data files for range {start_time}-{end_time} downloaded into "downloaded_data" folder.')
     
 except Exception as e:
     print(f"Amplitude file download failed: {e}")

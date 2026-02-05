@@ -1,62 +1,94 @@
 <div align="center">
   <img src="https://github.com/user-attachments/assets/ab8eec14-a3b5-4d04-9a84-2928e2c12380" alt="Amplitude Logo" width="30%" />
 
-  <h1>Amplitude Data Pipeline</h1>
+  <h1>Amplitude Analytics Data Pipeline</h1>
 
   <p>
-    <strong>A production-ready ELT pipeline extracting data from Amplitude and loading it to AWS S3.</strong>
+    A production-ready <strong>ELT pipeline</strong> for extracting data from <a href="https://amplitude.com/docs/apis/analytics/export">Amplitude's API</a> and loading it to <strong>AWS S3</strong>. This data is warehoused in <strong>Snowflake</strong> and <strong>dbt Platform</strong> is used to transform and model the warehoused data to make it analysis-ready.
   </p>
 </div>
 
 <hr />
 
-<p>
-  This project was developed as part of <strong>The Information Lab's Data Engineering School</strong>. It implements a robust ELT (Extract, Load, Transform) pipeline to ingest raw event data from <a href="https://amplitude.com/docs/apis/analytics/export">Amplitude's Export API</a> and secure it in a Data Lake (AWS S3).
-</p>
-
-<h3>Tasks Completed</h3>
-<ul>
-  <li>✅ <strong>Extract:</strong> Ingestion via API, robust error handling, and nested ZIP extraction.</li>
-  <li>✅ <strong>Load:</strong> Automated upload to AWS S3 with local cleanup.</li>
-  <li>✅ <strong>Logging:</strong> Comprehensive runtime logging for auditing and debugging.</li>
-</ul>
-
-<hr />
-
 <h2>🚀 Project Architecture</h2>
 
-<p>The pipeline operates in two distinct phases:</p>
-
+<p>The pipeline consists of three stages:</p>
 <ol>
-  <li><strong>Extract (<code>amplitude_api_call.py</code>):</strong>
+  <li><strong>Extract & Load with Python 🐍 </strong>
+  <ul>
+    <li><code>main.py</code>
+      <ul>
+        <li>Manages the workflow event order and conditional execution logic.</li>
+        <li>Initializes <strong>logging handlers</strong> for each function to capture detailed telemetry for each pipeline phase.</li>
+      </ul>
+    </li>
+    <li><code>amplitude_date_range.py</code>
+      <ul>
+        <li>Calculates <strong>dynamic, relative time window</strong> using Python.</li>
+        <li>Supports configurable ingestion (days, weeks, or hours) while ensuring compliance with Amplitude’s format requirements.</li>
+      </ul>
+    </li>
+    <li><code>amplitude_api_call.py</code>
+      <ul>
+        <li>Handles API authentication and stream-downloading of <strong> .zip</strong> files.</li>
+        <li>Implements a <strong>retry mechanism</strong> with specific mapping for various HTTP errors: 400 (4GB limit), 404 (missing data), and 504 (timeout) errors.</li>
+      </ul>
+    </li>
+    <li><code>amplitude_zip_file_extract.py</code>
+      <ul>
+        <li>Performs <strong>nested decompression</strong>: unzips downloaded .zip file → walks the directory structures → decompresses <strong>.gz</strong> files.</li>
+        <li>Uses <strong>tempfile</strong> and <strong>shutil</strong> for memory-efficient, chunked processing of large JSON payloads.</li>
+      </ul>
+    </li>
+    <li><code>amplitude_s3_load.py</code> 
     <ul>
-      <li>Calculates the date window for "yesterday" (00:00 - 23:00).</li>
-      <li>Queries the Amplitude EU Export API.</li>
-      <li>Downloads nested ZIP files and extracts the raw JSON event data.</li>
-    </ul>
-  </li>
-  <li><strong>Load (<code>s3_load_amplitude.py</code>):</strong>
-    <ul>
-      <li>Scans the extracted data folder.</li>
-      <li>Authenticates with AWS and uploads JSON files to an S3 bucket.</li>
-      <li><strong>Auto-cleanup:</strong> Deletes local files immediately after a successful upload to save disk space.</li>
-    </ul>
-  </li>
+        <li>Authenticates with AWS Boto3 to upload validated JSON files to S3.</li>
+        <li>Executes <strong>atomic cleanup</strong>: local files are deleted only after a successful S3 handshake.</li>
+      </ul>
+    </li>
+  </ul>
+
+  <li><strong>Warehousing - Snowflake ❄️</strong>
+  <ul>
+    <li><i>Coming soon - loading to Snowflake...</i></li>
+  </ul>
+  <li><strong>Transform with dbt Plaform 🔶</strong>
+  <ul>
+    <li><i>Coming soon - transformation with dbt...</i></li>
+  </ul>
 </ol>
 
+<hr>
+<h3>Tech Stack</h3>
+<ul>
+  <li><strong>Language:</strong> Python 3.12+</li>
+  <li><strong>Cloud Services:</strong> AWS S3 (Data Lake)</li>
+  <li><strong>Data Warehouse:</strong> Snowflake</li>
+  <li><strong>Transformation & Testing:</strong> dbt Platform</li>
+  <li><strong>Core Libraries:</strong> 
+    <code>boto3</code>, <code>requests</code>, <code>python-dotenv</code>, <code>zipfile</code>, <code>gzip</code></li>
+  <li><strong>Observability:</strong> Multi-stream timestamp logging for each of the four functions used in the main.py script.</li>
+</ul>
 <hr />
 
 <h2>📂 Project Structure</h2>
 
 <pre>
-├── logs/                   # Auto-generated: Stores runtime logs per execution
-├── downloaded_data/        # Auto-generated: Temp storage for raw ZIPs
-├── extracted_data/         # Auto-generated: Temp storage for JSON files
-├── modules/
-│   └── functions.py        # Contains helper function: nested_zip_file_extract
-├── .env                    # Secrets (API Keys & AWS Credentials)
-├── amplitude_api_call.py   # Script 1: Extract from Amplitude
-├── s3_load_amplitude.py    # Script 2: Load to AWS S3
+├── logs/                   
+│   ├── api_call/           # API connection & file download logs
+│   ├── date_range/         # Dynamic date time window calculation logs
+│   ├── s3_load/            # Upload JSON to AWS S3 logs
+│   └── zip_file_extract/   # Decompression nested .zip logs
+├── modules/                
+│   ├── amplitude_api_call.py
+│   ├── amplitude_date_range.py
+│   ├── amplitude_s3_load.py
+│   └── amplitude_zip_file_extract.py
+├── downloaded_data/        # Temp staging for binary .zip files
+├── extracted_data/         # Temp staging for decompressed .json files
+├── .env                    # Secret Management (API & AWS Keys)
+├── main.py                 # Pipeline Orchestrator
+├── requirements.txt        # Managed Dependencies
 └── README.md
 </pre>
 
@@ -65,15 +97,14 @@
 <h2>🛠️ Setup & Installation</h2>
 
 <h3>1. Clone the repository</h3>
-<pre><code>git clone https://github.com/alvarogonzalez-git/amplitude-data-pipeline-project.git
-cd amplitude-data-pipeline-project</code></pre>
+<pre><code>git clone https://github.com/yourusername/amplitude-data-pipeline.git
+cd amplitude-data-pipeline</code></pre>
 
 <h3>2. Install Dependencies</h3>
-<p>Ensure you have Python 3.12+ installed:</p>
-<pre><code>pip install requests boto3 python-dotenv</code></pre>
+<pre><code>pip install -r requirements.txt</code></pre>
 
-<h3>3. Configure Environment Variables</h3>
-<p>Create a <code>.env</code> file in the root directory. You now need both Amplitude <strong>and</strong> AWS credentials:</p>
+<h3>3. Configure Secrets</h3>
+<p>Create a <code>.env</code> file in the root directory. You must provide both Amplitude Analytics and AWS credentials.</p>
 
 <p><strong>File: <code>.env</code></strong></p>
 <pre><code># Amplitude Credentials
@@ -86,62 +117,63 @@ AWS_ACCESS_KEY=your_aws_access_key
 AWS_SECRET_KEY=your_aws_secret_key
 AWS_BUCKET_NAME=your_s3_bucket_name
 </code></pre>
-  
-<h2>🏃 Usage</h2>
-
-<h3>Phase 1: Extraction</h3>
-<p>Run the API call script to fetch yesterday's data.</p>
-<pre><code>python amplitude_api_call.py</code></pre>
-<ul>
-  <li><strong>Resilient Connection:</strong> Retries up to 3 times for 500/504 server errors.</li>
-  <li><strong>Smart Handling:</strong> Detects 400 (File too large) and 404 (No data) status codes.</li>
-  <li><strong>Output:</strong> Unzipped JSON files ready in <code>extracted_data/</code>.</li>
-</ul>
-
-<h3>Phase 2: Loading</h3>
-<p>Run the load script to push data to the cloud.</p>
-<pre><code>python s3_load_amplitude.py</code></pre>
-<ul>
-  <li><strong>Safety First:</strong> Only deletes local data if the S3 upload returns a success response.</li>
-  <li><strong>Feedback:</strong> Logs every file upload status to <code>logs/log_s3_load_...</code>.</li>
-</ul>
 
 <hr />
 
-<h2>🪵 Logging & Troubleshooting</h2>
-<p>Logs are stored in the <code>logs/</code> directory. Check these files if the script exits unexpectedly.</p>
+<h2>🏃 Pipeline Execution</h2>
+
+<p>The pipeline is fully automated. The main.py script includes logic gates to ensure that extraction only begins if the download is successful, and loading only begins if extraction is verified.</p>
+
+<pre><code>python main.py</code></pre>
+
+<h3>Key Resilience Features:</h3>
+<ul>
+  <li><strong>Stream Processing:</strong> Decompresses data in binary chunks to maintain a low memory footprint, allowing the pipeline to handle files larger than system RAM.</li>
+  <li><strong>State Awareness:</strong> If a specific file fails to upload to S3, the pipeline preserves that specific local file while cleaning up successful uploads, preventing data loss.</li>
+</ul>
+
+<h3>Troubleshooting Table:</h3>
 
 <table width="100%">
   <thead>
     <tr>
       <th>Status Code</th>
-      <th>Meaning</th>
-      <th>Action</th>
+      <th>Log Signal</th>
+      <th>System Action</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><code>200</code></td>
-      <td>Success</td>
-      <td>Data is downloading.</td>
-    </tr>
-    <tr>
       <td><code>400</code></td>
-      <td>Bad Request</td>
-      <td>File size > 4GB. Adjust script to download smaller time chunks.</td>
+      <td>"File size max exceeded"</td>
+      <td>Terminates current window; requires smaller time-delta input.</td>
     </tr>
     <tr>
       <td><code>404</code></td>
-      <td>Not Found</td>
-      <td>No data for this date, or API keys are incorrect.</td>
+      <td>"No data available"</td>
+      <td>Graceful exit; logs incident for audit.</td>
     </tr>
     <tr>
       <td><code>504</code></td>
-      <td>Timeout</td>
-      <td>Data volume too large. Script will auto-retry.</td>
+      <td>"Gateway Timeout"</td>
+      <td>Auto-retry triggered (up to 3 attempts).</td>
     </tr>
   </tbody>
 </table>
+
+<hr />
+
+<h2>⚙️ Orchestration & Deployment</h2>
+
+<p>
+  This project is designed to be compatible with containerized orchestration using Docker and Kestra:
+</p>
+
+<ul>
+  <li><strong>Containerization:</strong> Fully compatible with <strong>Docker</strong> for isolated environment execution.</li>
+  <li><strong>Workflow Management:</strong> Ready for integration with <strong>Kestra</strong> or Airflow for visual DAG management and automated scheduling.</li>
+  <li><strong>🔒 Security:</strong> All infrastructure configs (<code>.env</code>, <code>docker-compose.yml</code>) are managed via <code>.gitignore</code> to ensure zero exposure of credentials in version history.</li>
+</ul>
 
 <hr />
 
